@@ -12,7 +12,7 @@ from whoosh import fields
 from whoosh import index
 from whoosh import qparser
 
-from helper import dd
+from flaskr.helper import dd
 
 THIS_FOLDER = os.path.dirname(os.path.abspath("__file__"))
 
