@@ -1,0 +1,26 @@
+<script>
+    // Get the like button element
+    var likeButtons = document.querySelectorAll('.like-button');
+
+    likeButtons.forEach(function (button) {
+        button.addEventListener('click', function() {
+            var icon = button.querySelector('.fa-regular, .fa-solid');
+            if (icon.classList.contains('fa-regular')) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+            } else {
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+            }
+        });
+    });
+</script>
+<style>
+    .like-button i {
+        transition: color 0.3s ease-in-out;
+    }
+
+    .like-button .fa-solid {
+        color: black; /* Change this to the desired color */
+    }
+</style>
