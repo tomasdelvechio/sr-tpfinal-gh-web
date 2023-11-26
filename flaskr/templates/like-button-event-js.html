@@ -4,14 +4,44 @@
 
     likeButtons.forEach(function (button) {
         button.addEventListener('click', function() {
+            let selectLike = true;
+
+            // cambio de estilo
             var icon = button.querySelector('.fa-regular, .fa-solid');
             if (icon.classList.contains('fa-regular')) {
                 icon.classList.remove('fa-regular');
                 icon.classList.add('fa-solid');
+                selectLike = true;
             } else {
                 icon.classList.remove('fa-solid');
                 icon.classList.add('fa-regular');
+                selectLike = false;
             }
+
+            // comportamiento
+            fetch('/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // You can pass data in the body if required
+                body: JSON.stringify({
+                    id: button.id,
+                    like: selectLike,
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
         });
     });
 </script>
@@ -21,6 +51,6 @@
     }
 
     .like-button .fa-solid {
-        color: black; /* Change this to the desired color */
+        color: black;
     }
 </style>

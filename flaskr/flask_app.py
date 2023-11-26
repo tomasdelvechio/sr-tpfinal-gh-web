@@ -1,5 +1,5 @@
 from __init__ import create_app
-from flask import Flask, request, render_template, make_response, redirect, send_from_directory
+from flask import Flask, request, render_template, make_response, redirect, send_from_directory, jsonify
 import recomendar
 import os
 from db import get_top_users
@@ -71,11 +71,19 @@ def reset():
 
 @app.route('/static/favicon.ico')
 def favicon():
-    print(app.root_path)
     return send_from_directory(
         os.path.join(app.root_path, 'static'),
         'favicon.ico',
         mimetype='image/vnd.microsoft.icon')
+
+
+@app.route('/like', methods=['POST'])
+def like():
+    like_status = request.json
+    # example:
+    #   {'id': 'pytorch/pytorch', 'like': False}
+    data = {"status": "ok"}
+    return jsonify(data), 200
 
 
 if __name__ == "__main__":
