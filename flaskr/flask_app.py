@@ -79,11 +79,16 @@ def favicon():
 
 @app.route('/like', methods=['POST'])
 def like():
-    like_status = request.json
+    like_interaction = request.json
+    id_usuario = request.cookies.get('id_usuario')
     # example:
     #   {'id': 'pytorch/pytorch', 'like': False}
-    data = {"status": "ok"}
-    return jsonify(data), 200
+    try:
+        recomendar.insertar_interacciones(like_interaction["id"], id_usuario, like_interaction["like"])
+        return jsonify({"status": "ok"}), 200
+    except Exception as e:
+        print(e.message)
+        return jsonify({"status": "error"}), 500
 
 
 if __name__ == "__main__":
