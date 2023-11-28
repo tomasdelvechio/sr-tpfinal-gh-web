@@ -3,6 +3,8 @@ import pandas as pd
 import sys
 import os
 
+from flask import current_app
+
 import lightfm as lfm
 from lightfm import data
 from lightfm import cross_validation
@@ -31,7 +33,8 @@ def sql_execute(query, params=None):
 def sql_select(query, params=None):
     con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
     con.row_factory = sqlite3.Row # esto es para que devuelva registros en el fetchall
-    cur = con.cursor()    
+    con.set_trace_callback(print)
+    cur = con.cursor()
     if params:
         res = cur.execute(query, params)
     else:
@@ -47,9 +50,9 @@ def crear_usuario(id_usuario):
     sql_execute(query, (id_usuario,))
     return
 
-def insertar_interacciones(id_repo, id_usuario, date, interacciones="interactions"):
-    query = f"INSERT INTO {interacciones}(repository, user, date) VALUES (?, ?, ?) ON CONFLICT (repository, user) DO UPDATE SET date=?;" # si el date existia lo actualizo
-    sql_execute(query, (id_repo, id_usuario, date, date))
+def insertar_interacciones(id_repo, id_usuario, like, interacciones="interactions"):
+    query = f"INSERT INTO {interacciones}(repository, user, date, like) VALUES (?, ?, DATETIME('now','localtime'), ?) ON CONFLICT (repository, user) DO UPDATE SET date=DATETIME('now','localtime'), like=?;" # si el date existia lo actualizo
+    sql_execute(query, (id_repo, id_usuario, like, like))
     return
 
 def reset_usuario(id_lector, interacciones="interactions"):
@@ -62,14 +65,14 @@ def obtener_libro(id_libro):
     libro = sql_select(query, (id_libro,))[0]
     return libro
 
-def valorados(repository, interacciones="interactions"):
-    query = f"SELECT * FROM {interacciones} WHERE repository = ?"
-    valorados = sql_select(query, (repository,))
+def valorados(user, interacciones="interactions"):
+    query = f"SELECT * FROM {interacciones} WHERE user = ? AND like = 1"
+    valorados = sql_select(query, (user,))
     return valorados
 
-def ignorados(repository, interacciones="interactions"):
-    query = f"SELECT * FROM {interacciones} WHERE repository = ?"
-    ignorados = sql_select(query, (repository,))
+def ignorados(user, interacciones="interactions"):
+    query = f"SELECT * FROM {interacciones} WHERE user = ? AND like = 0"
+    ignorados = sql_select(query, (user,))
     return ignorados
 
 def datos_repositories(id_repos):
@@ -77,14 +80,14 @@ def datos_repositories(id_repos):
     repositories = sql_select(query, id_repos)
     return repositories
 
-def recomendar_top_9(user, interacciones="interactions"):
+def recomendar_top_n(user, n=6, interacciones="interactions"):
     query = f"""
         SELECT repository, count(*) AS cant
           FROM {interacciones}
          WHERE repository NOT IN (SELECT repository FROM {interacciones} WHERE user = ?)
          GROUP BY 1
          ORDER BY 2 DESC
-         LIMIT 6
+         LIMIT {n}
     """
     repositories = [r["repository"] for r in sql_select(query, (user,))]
     return repositories
@@ -225,12 +228,13 @@ def recomendar_whoosh(id_lector, interacciones="interactions"):
 def recomendar(id_usuario, interacciones="interactions"):
     # TODO: combinar mejor los recomendadores
     # TODO: crear usuarios fans para llenar la matriz
+    
+    topN = current_app.config["TOP_N"]
 
     cant_valorados = len(valorados(id_usuario, interacciones))
-
-    if cant_valorados <= 5:
-        print("recomendador: top9", file=sys.stdout)
-        id_repos = recomendar_top_9(id_usuario, interacciones)
+    if cant_valorados <= topN or current_app.config["DEBUG_TOP"]:
+        print("recomendador: topN", file=sys.stdout)
+        id_repos = recomendar_top_n(id_usuario, interacciones)
     elif cant_valorados <= 10:
         print("recomendador: perfil", file=sys.stdout)
         id_repos = recomendar_perfil(id_usuario, interacciones)

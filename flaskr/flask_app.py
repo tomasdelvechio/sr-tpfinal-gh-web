@@ -37,17 +37,17 @@ def recomendaciones():
     id_usuario = request.cookies.get('id_usuario')
 
     # me envían el formulario
-    if request.method == 'POST':
-        for id_repo in request.form.keys():
-            rating = int(request.form[id_repo])
-            recomendar.insertar_interacciones(id_repo, id_usuario, rating)
+    #if request.method == 'POST':
+    #    for id_repo in request.form.keys():
+    #        rating = int(request.form[id_repo])
+    #        recomendar.insertar_interacciones(id_repo, id_usuario, rating)
 
     # recomendaciones
     repos = recomendar.recomendar(id_usuario)
 
     # pongo repos vistos con rating = 0
-    # for repo in repos:
-    #    recomendar.insertar_interacciones(repo["id"], id_usuario, 0)
+    #for repo in repos:
+    #    recomendar.insertar_interacciones(repo["id"], id_usuario, False)
 
     cant_valorados = len(recomendar.valorados(id_usuario))
     cant_ignorados = len(recomendar.ignorados(id_usuario))
