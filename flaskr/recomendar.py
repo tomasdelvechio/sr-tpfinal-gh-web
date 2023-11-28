@@ -89,6 +89,7 @@ def recomendar_top_n(user, n=6, interacciones="interactions"):
          ORDER BY 2 DESC
          LIMIT {n}
     """
+    print(query)
     repositories = [r["repository"] for r in sql_select(query, (user,))]
     return repositories
 
@@ -234,7 +235,7 @@ def recomendar(id_usuario, interacciones="interactions"):
     cant_valorados = len(valorados(id_usuario, interacciones))
     if cant_valorados <= topN or current_app.config["DEBUG_TOP"]:
         print("recomendador: topN", file=sys.stdout)
-        id_repos = recomendar_top_n(id_usuario, interacciones)
+        id_repos = recomendar_top_n(id_usuario, interacciones=interacciones)
     elif cant_valorados <= 10:
         print("recomendador: perfil", file=sys.stdout)
         id_repos = recomendar_perfil(id_usuario, interacciones)
