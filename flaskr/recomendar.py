@@ -33,7 +33,8 @@ def sql_execute(query, params=None):
 def sql_select(query, params=None):
     con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
     con.row_factory = sqlite3.Row # esto es para que devuelva registros en el fetchall
-    con.set_trace_callback(print)
+    if current_app.config["DEBUG_SQL"]:
+        con.set_trace_callback(print)
     cur = con.cursor()
     if params:
         res = cur.execute(query, params)
@@ -89,7 +90,6 @@ def recomendar_top_n(user, n=6, interacciones="interactions"):
          ORDER BY 2 DESC
          LIMIT {n}
     """
-    print(query)
     repositories = [r["repository"] for r in sql_select(query, (user,))]
     return repositories
 
