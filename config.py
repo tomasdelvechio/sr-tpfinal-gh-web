@@ -3,7 +3,7 @@ DATABASE='data/data.db'
 
 # Parametros Recomendadores
 UMBRAL_TOP_N = 6
-UMBRAL_PERFIL = 30
+UMBRAL_PERFIL = 20
 
 # DEBUG options
 

@@ -103,7 +103,10 @@ def recomendar_top_n(user, n=6, interacciones="interactions"):
     repositories = [r["repository"] for r in sql_select(query, (user,))]
     return repositories
 
-def recomendar_perfil(id_lector, interacciones="interactions", items="repositories", users="users"):
+def recomendar_perfil_old(id_lector, interacciones="interactions", items="repositories", users="users"):
+    """
+    Recomendador basado en el contenido
+    """
     # TODO: usar otras columnas además de genlit
     # TODO: usar datos del usuario para el perfil
     # TODO: usar cantidad de interacciones para desempatar los scores de perfil iguales
@@ -129,6 +132,39 @@ def recomendar_perfil(id_lector, interacciones="interactions", items="repositori
         "Histórica en bolsillo": "Narrativa histórica",
         })
     df_items = df_items.rename(columns={"genero": "genlit"}) # para que no coincida con el campos de los usuarios
+    
+    perf_items = pd.get_dummies(df_items[["id_libro", "genlit"]], columns=["genlit"]).set_index("id_libro")
+
+    perf_usuario = df_int[(df_int["id_lector"] == id_lector) & (df_int["rating"] > 0)].merge(perf_items, on="id_libro")
+
+    for c in perf_usuario.columns:
+        if c.startswith("genlit_"):
+            perf_usuario[c] = perf_usuario[c] * perf_usuario["rating"]
+
+    perf_usuario = perf_usuario.drop(columns=["id_libro", "rating"]).groupby("id_lector").mean()
+    perf_usuario = perf_usuario / perf_usuario.sum(axis=1)[0] # normalizo
+    for g in perf_items.columns:
+        perf_items[g] = perf_items[g] * perf_usuario[g][0]
+
+    libros_leidos_o_vistos = df_int.loc[df_int["id_lector"] == id_lector, "id_libro"].tolist()
+    recomendaciones = [l for l in perf_items.sum(axis=1).sort_values(ascending=False).index if l not in libros_leidos_o_vistos][:9]
+    return recomendaciones
+
+def recomendar_perfil(id_lector, interacciones="interactions", items="repositories", users="users"):
+    """
+    Recomendador basado en el contenido
+    """
+    # TODO: usar otras columnas además de genlit
+    # TODO: usar datos del usuario para el perfil
+    # TODO: usar cantidad de interacciones para desempatar los scores de perfil iguales
+    # TODO: usar los items ignorados
+
+    con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
+    df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
+    df_items = pd.read_sql_query(f"SELECT * FROM {items}", con)
+    df_users = pd.read_sql_query(f"SELECT * FROM {users}", con)
+    con.close()
+
     
     perf_items = pd.get_dummies(df_items[["id_libro", "genlit"]], columns=["genlit"]).set_index("id_libro")
 
