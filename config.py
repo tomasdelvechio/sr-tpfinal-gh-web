@@ -2,7 +2,8 @@ SECRET_KEY='hola'
 DATABASE='data/data.db'
 
 # Parametros Recomendadores
-TOP_N = 6
+UMBRAL_TOP_N = 6
+UMBRAL_PERFIL = 30
 
 # DEBUG options
 
@@ -11,3 +12,4 @@ DEBUG_SQL = True
 
 ## Fuerza usar siempre el método TOPN para recomendar - util en dev
 DEBUG_TOP = True
+DEBUG_PERFIL = False

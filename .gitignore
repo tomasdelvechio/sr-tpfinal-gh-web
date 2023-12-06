@@ -16,3 +16,5 @@ build/
 data/*
 !data/.gitkeep
 indexdir/
+
+*.log

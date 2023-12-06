@@ -82,18 +82,28 @@ def datos_repositories(id_repos):
     return repositories
 
 def recomendar_top_n(user, n=6, interacciones="interactions"):
+    """
+    Recomendador orientado a usuarios de los que no se dispone ninguna información
+    
+    Arma un top de repos:
+        - Mas votados positivamente
+        - Que el usuario en cuestión no haya valorado ya
+        - Si tienen misma cantidad de ratings, ordena por fecha de valoración mas reciente
+    """
+    
     query = f"""
-        SELECT repository, count(*) AS cant
+        SELECT repository, count(*) AS cant, date
           FROM {interacciones}
          WHERE repository NOT IN (SELECT repository FROM {interacciones} WHERE user = ?)
+            AND like = 1
          GROUP BY 1
-         ORDER BY 2 DESC
+         ORDER BY 2 DESC, 3 DESC
          LIMIT {n}
     """
     repositories = [r["repository"] for r in sql_select(query, (user,))]
     return repositories
 
-def recomendar_perfil(id_lector, interacciones="interactions"):
+def recomendar_perfil(id_lector, interacciones="interactions", items="repositories", users="users"):
     # TODO: usar otras columnas además de genlit
     # TODO: usar datos del usuario para el perfil
     # TODO: usar cantidad de interacciones para desempatar los scores de perfil iguales
@@ -101,8 +111,8 @@ def recomendar_perfil(id_lector, interacciones="interactions"):
 
     con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
     df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
-    df_items = pd.read_sql_query("SELECT * FROM libros", con)
-    df_usuarios = pd.read_sql_query("SELECT * FROM lectores", con)
+    df_items = pd.read_sql_query(f"SELECT * FROM {items}", con)
+    df_users = pd.read_sql_query(f"SELECT * FROM {users}", con)
     con.close()
 
     df_items["genero"] = df_items["genero"].replace({
@@ -229,14 +239,12 @@ def recomendar_whoosh(id_lector, interacciones="interactions"):
 def recomendar(id_usuario, interacciones="interactions"):
     # TODO: combinar mejor los recomendadores
     # TODO: crear usuarios fans para llenar la matriz
-    
-    topN = current_app.config["TOP_N"]
 
     cant_valorados = len(valorados(id_usuario, interacciones))
-    if cant_valorados <= topN or current_app.config["DEBUG_TOP"]:
+    if cant_valorados <= current_app.config["UMBRAL_TOP_N"] or current_app.config["DEBUG_TOP"]:
         print("recomendador: topN", file=sys.stdout)
         id_repos = recomendar_top_n(id_usuario, interacciones=interacciones)
-    elif cant_valorados <= 10:
+    elif cant_valorados <= current_app.config["UMBRAL_PERFIL"] or current_app.config["DEBUG_PERFIL"]:
         print("recomendador: perfil", file=sys.stdout)
         id_repos = recomendar_perfil(id_usuario, interacciones)
     else:
