@@ -1,5 +1,62 @@
-<header class="bg-gray-800 text-white p-8 mb-4">
-    <h1 class="text-3xl font-bold pb-4">Recomendador de repos Github</h1>
-    <p class="text-sm pb-4">Autor: Tomás Delvechio</p>
-    <p class="text-sm">Trabajo Final para la asignatura Sistemas de Recomendación - Cursada 2023.</p>
+<header class="flex justify-between items-center bg-gray-100 text-gray-800 p-4 mb-4">
+
+    <div class="flex flex-col items-start space-y-2">
+        <h1 class="text-2xl font-bold">Recomendador de repos Github</h1>
+        <p class="text-sm text-gray-600">Sistemas de Recomendación - Cursada 2023</p>
+        <p class="text-sm text-gray-600">Autor: Tomás Delvechio</p>
+    </div>
+
+    <div class="flex flex-col space-y-1 bg-white rounded border border-gray-300 rounded-lg p-3">
+        <div class="flex items-center space-x-1">
+            <i class="fa-solid fa-user text-gray-600"></i>
+            <a href="/profile/{{ id_usuario }}" class="text-sm text-gray-600 hover:text-gray-800">{{ id_usuario }}</a>
+        </div>
+        <div class="flex items-center space-x-1">
+            <i class="fa-solid fa-star text-gray-600"></i>
+            <p class="text-sm text-gray-600 hover:text-gray-800">900 Likes</p>
+        </div>
+        <div class="flex items-center space-x-1">
+            <i class="fa-solid fa-chart-line text-gray-600"></i>
+            <button id="openModal" class="text-sm ml-2 text-gray-600 hover:text-gray-800 focus:outline-none hover:underline">More stats...</button>
+        </div>
+    </div>
 </header>
+
+<!-- Modal -->
+<div id="header-stats-modal" class="modal hidden fixed inset-0 z-50 overflow-auto bg-gray-700 bg-opacity-75">
+    <div class="modal-content bg-white mx-auto my-10 p-6 rounded w-1/2">
+        <div class="flex items-center justify-between mb-4">
+            <!-- Title on the left -->
+            <h2 class="text-xl font-bold">User Details</h2>
+            <!-- Close icon at the top-right corner -->
+            <span id="closeModal" class="modal-close cursor-pointer text-2xl">&times;</span>
+        </div>
+        <!-- Modal content -->
+        <p class="text-gray-700 mb-2">This is a GitHub-style modal window.</p>
+        <p class="text-gray-700">Feel free to customize the content.</p>
+    </div>
+</div>
+
+<script>
+    // JavaScript to handle modal functionality
+    const openModalBtn = document.getElementById('openModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modal = document.getElementById('header-stats-modal');
+
+    // Show modal
+    openModalBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+    });
+
+    // Hide modal
+    closeModalBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+
+    // Close modal if clicked outside the content area
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+</script>
