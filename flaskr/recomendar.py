@@ -20,7 +20,9 @@ THIS_FOLDER = os.path.dirname(os.path.abspath("__file__"))
 
 def sql_execute(query, params=None):
     con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
-    cur = con.cursor()    
+    if current_app.config["DEBUG_SQL"]:
+        con.set_trace_callback(print)
+    cur = con.cursor()
     if params:
         res = cur.execute(query, params)
     else:
@@ -51,14 +53,19 @@ def crear_usuario(id_usuario):
     sql_execute(query, (id_usuario,))
     return
 
-def insertar_interacciones(id_repo, id_usuario, like, interacciones="interactions"):
-    query = f"INSERT INTO {interacciones}(repository, user, date, like) VALUES (?, ?, DATETIME('now','localtime'), ?) ON CONFLICT (repository, user) DO UPDATE SET date=DATETIME('now','localtime'), like=?;" # si el date existia lo actualizo
-    sql_execute(query, (id_repo, id_usuario, like, like))
+def insertar_interacciones(id_repo, id_usuario, interacciones="interactions"):
+    query = f"INSERT INTO {interacciones}(repository, user, date) VALUES (?, ?, DATETIME('now','localtime')) ON CONFLICT (repository, user) DO UPDATE SET date=DATETIME('now','localtime');" # si el date existia lo actualizo
+    sql_execute(query, (id_repo, id_usuario))
     return
 
-def reset_usuario(id_lector, interacciones="interactions"):
-    query = f"DELETE FROM {interacciones} WHERE id_lector = ?;"
-    sql_execute(query, (id_lector,))
+def eliminar_interaccion(id_repo, id_usuario, interacciones="interactions"):
+    query = f"DELETE FROM {interacciones} WHERE user = ? AND repository = ?;"
+    sql_execute(query, (id_usuario, id_repo))
+    return
+
+def reset_usuario(id_usuario, interacciones="interactions"):
+    query = f"DELETE FROM {interacciones} WHERE user = ?;"
+    sql_execute(query, (id_usuario,))
     return
 
 def obtener_libro(id_libro):

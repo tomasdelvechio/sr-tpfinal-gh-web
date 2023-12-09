@@ -84,7 +84,10 @@ def like():
     # example:
     #   {'id': 'pytorch/pytorch', 'like': False}
     try:
-        recomendar.insertar_interacciones(like_interaction["id"], id_usuario, like_interaction["like"])
+        if like_interaction['like']:
+            recomendar.insertar_interacciones(like_interaction["id"], id_usuario)
+        else:
+            recomendar.eliminar_interaccion(like_interaction["id"], id_usuario)
         return jsonify({"status": "ok"}), 200
     except Exception as e:
         print(e.message)
