@@ -156,7 +156,7 @@ def recomendar_perfil_old(id_lector, interacciones="interactions", items="reposi
     recomendaciones = [l for l in perf_items.sum(axis=1).sort_values(ascending=False).index if l not in libros_leidos_o_vistos][:9]
     return recomendaciones
 
-def recomendar_perfil(id_lector, interacciones="interactions", items="repositories", users="users"):
+def recomendar_perfil(username, n=6, interacciones="interactions", items="repositories", users="users"):
     """
     Recomendador basado en el contenido
     """
@@ -167,26 +167,41 @@ def recomendar_perfil(id_lector, interacciones="interactions", items="repositori
 
     con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
     df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
-    df_items = pd.read_sql_query(f"SELECT * FROM {items}", con)
-    df_users = pd.read_sql_query(f"SELECT * FROM {users}", con)
+    original_df_items = pd.read_sql_query(f"SELECT * FROM {items}", con)
+    df_items = original_df_items.drop(["es_fork", "about", "archived", "topics", "language"], axis=1)
     con.close()
-
     
-    perf_items = pd.get_dummies(df_items[["id_libro", "genlit"]], columns=["genlit"]).set_index("id_libro")
+    # dummy de lenguajes y topics
+    df_languaje_dummies = original_df_items.language.str.get_dummies(sep=";")
+    df_topics_dummies = original_df_items.topics.str.get_dummies(sep=";")
+    df_perfil_items = pd.concat([df_items, df_languaje_dummies, df_topics_dummies], axis=1)
 
-    perf_usuario = df_int[(df_int["id_lector"] == id_lector) & (df_int["rating"] > 0)].merge(perf_items, on="id_libro")
+    repos_user = df_int.loc[
+        (df_int["user"] == username),
+        "repository"].to_list()
 
-    for c in perf_usuario.columns:
-        if c.startswith("genlit_"):
-            perf_usuario[c] = perf_usuario[c] * perf_usuario["rating"]
+    # me quedo con el perfil del usuario de los repos que le gustaron
+    perfil_user = df_perfil_items[df_perfil_items["id"].isin(repos_user)].drop(columns=["id", "index", "stars", "watchers", "forks", "issues", "subscribers"]).sum(axis=0).sort_values(ascending=False)
+    perfil_user = perfil_user / perfil_user.sum() # normalizo
 
-    perf_usuario = perf_usuario.drop(columns=["id_libro", "rating"]).groupby("id_lector").mean()
-    perf_usuario = perf_usuario / perf_usuario.sum(axis=1)[0] # normalizo
-    for g in perf_items.columns:
-        perf_items[g] = perf_items[g] * perf_usuario[g][0]
+    df_perfil_user = df_perfil_items.drop(columns=["index", "stars", "watchers", "forks", "issues", "subscribers"]).set_index("id").copy()
 
-    libros_leidos_o_vistos = df_int.loc[df_int["id_lector"] == id_lector, "id_libro"].tolist()
-    recomendaciones = [l for l in perf_items.sum(axis=1).sort_values(ascending=False).index if l not in libros_leidos_o_vistos][:9]
+    # por ahora dimension son lenguajes, pero podria haber topics
+    for dimension in df_perfil_user.columns:
+        df_perfil_user[dimension] = df_perfil_user[dimension] * perfil_user[dimension]
+
+    rank = df_perfil_user.sum(axis=1).sort_values(ascending=False)[:n]
+    df_recomendacion_scores = pd.DataFrame({'repository': rank.index, 'score': rank.values})
+    df_recomendacion_scores
+
+    df_recomendacion_fechas = (df_int[df_int["repository"].isin(list(df_recomendacion_scores.repository))].sort_values('date').groupby('repository').tail(1))[["repository", "date"]]
+    df_recomendacion_fechas
+
+    df_recomendacion = pd.merge(df_recomendacion_fechas, df_recomendacion_scores, on="repository")#.sort_values(['score', 'date'], ascending=[False, False])
+    df_recomendacion["date"] = pd.to_datetime(df_recomendacion["date"])
+    df_recomendacion = df_recomendacion.sort_values(['score', 'date'], ascending=[False, False]).reset_index(drop=True)
+
+    recomendaciones = list(df_recomendacion.reset_index(drop=True).repository)
     return recomendaciones
 
 def recomendar_lightfm(id_lector, interacciones="interactions"):
@@ -288,7 +303,7 @@ def recomendar(id_usuario, interacciones="interactions"):
         id_repos = recomendar_top_n(id_usuario, interacciones=interacciones)
     elif cant_valorados <= current_app.config["UMBRAL_PERFIL"] or current_app.config["DEBUG_PERFIL"]:
         print("recomendador: perfil", file=sys.stdout)
-        id_repos = recomendar_perfil(id_usuario, interacciones)
+        id_repos = recomendar_perfil(id_usuario, interacciones=interacciones)
     else:
         print("recomendador: surprise", file=sys.stdout)
         #id_repos = recomendar_surprise(id_usuario, interacciones)
