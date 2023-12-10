@@ -74,12 +74,12 @@ def obtener_libro(id_libro):
     return libro
 
 def valorados(user, interacciones="interactions"):
-    query = f"SELECT * FROM {interacciones} WHERE user = ? AND like = 1"
+    query = f"SELECT * FROM {interacciones} WHERE user = ?"
     valorados = sql_select(query, (user,))
     return valorados
 
 def ignorados(user, interacciones="interactions"):
-    query = f"SELECT * FROM {interacciones} WHERE user = ? AND like = 0"
+    query = f"SELECT * FROM {interacciones} WHERE user = ?"
     ignorados = sql_select(query, (user,))
     return ignorados
 
@@ -102,7 +102,6 @@ def recomendar_top_n(user, n=6, interacciones="interactions"):
         SELECT repository, count(*) AS cant, date
           FROM {interacciones}
          WHERE repository NOT IN (SELECT repository FROM {interacciones} WHERE user = ?)
-            AND like = 1
          GROUP BY 1
          ORDER BY 2 DESC, 3 DESC
          LIMIT {n}
