@@ -43,7 +43,7 @@ def recomendaciones():
     #        recomendar.insertar_interacciones(id_repo, id_usuario, rating)
 
     # recomendaciones
-    repos = recomendar.recomendar(id_usuario)
+    repos, recomendador_activo = recomendar.recomendar(id_usuario)
 
     # pongo repos vistos con rating = 0
     #for repo in repos:
@@ -58,6 +58,7 @@ def recomendaciones():
         id_usuario=id_usuario,
         cant_valorados=cant_valorados,
         cant_ignorados=cant_ignorados,
+        recomendador_activo=recomendador_activo,
         title="Recomendaciones")
 
 
@@ -116,6 +117,19 @@ def profile(username):
         cant_ignorados=100,
         own_profile=own_profile,
         title="Profile")
+
+
+@app.route('/users')
+def users():
+    id_usuario = request.cookies.get('id_usuario')
+    usuarios = recomendar.get_users()
+    return render_template(
+        "usuarios.html",
+        usuarios=usuarios,
+        id_usuario=id_usuario,
+        title="Buscar usuarios"
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

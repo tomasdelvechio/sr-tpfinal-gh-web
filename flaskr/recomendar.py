@@ -297,12 +297,17 @@ def recomendar(id_usuario, interacciones="interactions"):
     # TODO: combinar mejor los recomendadores
     # TODO: crear usuarios fans para llenar la matriz
 
+    recomendador_activo = {'type': None, 'why': None}
     cant_valorados = len(valorados(id_usuario, interacciones))
     if cant_valorados <= current_app.config["UMBRAL_TOP_N"] or current_app.config["DEBUG_TOP"]:
         print("recomendador: topN", file=sys.stdout)
+        recomendador_activo["type"] = "Top mas populares"
+        recomendador_activo["why"] = f"Porque valoraste menos de {current_app.config['UMBRAL_TOP_N']} ({cant_valorados})"
         id_repos = recomendar_top_n(id_usuario, interacciones=interacciones)
     elif cant_valorados <= current_app.config["UMBRAL_PERFIL"] or current_app.config["DEBUG_PERFIL"]:
         print("recomendador: perfil", file=sys.stdout)
+        recomendador_activo["type"] = "Filtro básado en contenido"
+        recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_TOP_N']} pero menos de {current_app.config['UMBRAL_PERFIL']} ({cant_valorados})"
         id_repos = recomendar_perfil(id_usuario, interacciones=interacciones)
     else:
         print("recomendador: surprise", file=sys.stdout)
@@ -315,5 +320,10 @@ def recomendar(id_usuario, interacciones="interactions"):
 
     recomendaciones = datos_repositories(id_repos)
 
-    return recomendaciones
+    return recomendaciones, recomendador_activo
 
+
+def get_users(n = 100):
+    query = "SELECT DISTINCT id, gh_id, name, bio FROM users ORDER BY followers DESC, following DESC LIMIT ?"
+    users = sql_select(query, (n,))
+    return users
