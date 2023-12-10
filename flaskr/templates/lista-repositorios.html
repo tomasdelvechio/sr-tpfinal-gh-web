@@ -1,0 +1,32 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 container mx-auto">
+	{% for repo in repos %}
+		<div class="border border-gray-300 rounded-lg flex">
+				<div class="w-11/12 m-4 flex flex-col">
+					<div class="flex items-center">
+						<i class="fa-solid fa-book-bookmark mr-2 text-slate-500"></i>
+						<p class="text-sm font-semibold overflow-hidden text-ellipsis text-blue-500 line-clamp-1">
+							<a target="_blank" href="https://github.com/{{ repo.id }}">{{ repo.id }}</a>
+						</p>
+					</div>
+					<div class="flex-grow">
+						<p class="my-2 text-xs text-slate-500 font-light max-h-12 line-clamp-3">{{ repo.about|title }}</p>
+					</div>
+					<div class="flex mt-auto text-sm items-end font-light">
+						<p class="mr-6">
+							<i class="fa-solid fa-star mr-1 text-slate-500"></i>
+							{{ repo.stars }}
+						</p>
+						<p class="mr-6">
+							<i class="fa-solid fa-code-fork mr-1 text-slate-500"></i>
+							{{ repo.forks }}
+						</p>
+					</div>
+				</div>
+				{% if thumbs_status is defined %}
+					<div id="{{ repo.id }}" class="min-w-min like-button w-1/12 flex items-center place-content-center border-l text-slate-300 hover:text-slate-500 cursor-pointer hover:bg-slate-100">
+						<i id="like-button-{{ loop.index }}" class="p-3 text-4xl fa-{{thumbs_status}} fa-thumbs-up"></i>
+					</div>
+				{% endif %}
+		</div>
+	{% endfor %}
+</div>

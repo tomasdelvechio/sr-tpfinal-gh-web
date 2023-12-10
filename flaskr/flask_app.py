@@ -95,5 +95,27 @@ def like():
         return jsonify({"status": "error"}), 500
 
 
+@app.route('/profile/<username>')
+def profile(username):
+    id_usuario = request.cookies.get('id_usuario')
+    if (id_usuario == username):
+        own_profile = True
+        print("es mi profile")
+    else:
+        own_profile = False
+        print("es el profile de otro")
+    liked_repos = recomendar.valorados(username)
+    repositories = [r["repository"] for r in liked_repos]
+    repos = recomendar.datos_repositories(repositories)
+    return render_template(
+        "profile.html",
+        repos=repos,
+        id_usuario=id_usuario,
+        username=username,
+        cant_valorados=100,
+        cant_ignorados=100,
+        own_profile=own_profile,
+        title="Profile")
+
 if __name__ == "__main__":
     app.run(debug=True)
