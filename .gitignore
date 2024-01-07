@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 
 instance/
+config.py
 
 .pytest_cache/
 .coverage

@@ -1,4 +1,4 @@
-SECRET_KEY='hola'
+SECRET_KEY='408f5760fb1a1f3fd8006681b3f39ec390b77bad1d72875fafba7f9f714325d0'
 DATABASE='data/data.db'
 
 # Parametros Recomendadores
@@ -8,9 +8,9 @@ UMBRAL_PERFIL = 20
 # DEBUG options
 
 ## Debug de querys
-DEBUG_SQL = True
+DEBUG_SQL = False
 
 ## Fuerza usar siempre el método TOPN para recomendar - util en dev
 DEBUG_TOP = False
 DEBUG_PERFIL = False
-DEBUG_COLABORATIVE = True
+DEBUG_COLABORATIVE = False
