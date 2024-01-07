@@ -5,17 +5,6 @@ import os
 
 from flask import current_app
 
-import lightfm as lfm
-from lightfm import data
-from lightfm import cross_validation
-from lightfm import evaluation
-import surprise as sp
-
-import whoosh as wh
-from whoosh import fields
-from whoosh import index
-from whoosh import qparser
-
 from recommenders.ImplicitRecommender import ImplicitRecommender
 
 THIS_FOLDER = os.path.dirname(os.path.abspath("__file__"))
@@ -111,52 +100,6 @@ def recomendar_top_n(user, n=6, interacciones="interactions"):
     repositories = [r["repository"] for r in sql_select(query, (user,))]
     return repositories
 
-def recomendar_perfil_old(id_lector, interacciones="interactions", items="repositories", users="users"):
-    """
-    Recomendador basado en el contenido
-    """
-    # TODO: usar otras columnas además de genlit
-    # TODO: usar datos del usuario para el perfil
-    # TODO: usar cantidad de interacciones para desempatar los scores de perfil iguales
-    # TODO: usar los items ignorados
-
-    con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
-    df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
-    df_items = pd.read_sql_query(f"SELECT * FROM {items}", con)
-    df_users = pd.read_sql_query(f"SELECT * FROM {users}", con)
-    con.close()
-
-    df_items["genero"] = df_items["genero"].replace({
-        "Autoayuda": "Autoayuda Y Espiritualidad", 
-        "Biografías": "Biografías, Memorias", 
-        "Clasicos de la literatura": "Clásicos de la literatura",
-        "Cómics": "Cómics, Novela Gráfica",
-        "Ensayo": "Estudios y ensayos",
-        "Juvenil": "Infantil y juvenil",
-        "No Ficción": "No ficción",
-        "Novela negra": "Novela negra, intriga, terror",
-        "Poesía": "Poesía, teatro",
-        "Policiaca. Novela negra en bolsillo": "Novela negra, intriga, terror",
-        "Histórica en bolsillo": "Narrativa histórica",
-        })
-    df_items = df_items.rename(columns={"genero": "genlit"}) # para que no coincida con el campos de los usuarios
-    
-    perf_items = pd.get_dummies(df_items[["id_libro", "genlit"]], columns=["genlit"]).set_index("id_libro")
-
-    perf_usuario = df_int[(df_int["id_lector"] == id_lector) & (df_int["rating"] > 0)].merge(perf_items, on="id_libro")
-
-    for c in perf_usuario.columns:
-        if c.startswith("genlit_"):
-            perf_usuario[c] = perf_usuario[c] * perf_usuario["rating"]
-
-    perf_usuario = perf_usuario.drop(columns=["id_libro", "rating"]).groupby("id_lector").mean()
-    perf_usuario = perf_usuario / perf_usuario.sum(axis=1)[0] # normalizo
-    for g in perf_items.columns:
-        perf_items[g] = perf_items[g] * perf_usuario[g][0]
-
-    libros_leidos_o_vistos = df_int.loc[df_int["id_lector"] == id_lector, "id_libro"].tolist()
-    recomendaciones = [l for l in perf_items.sum(axis=1).sort_values(ascending=False).index if l not in libros_leidos_o_vistos][:9]
-    return recomendaciones
 
 def recomendar_perfil(username, n=6, interacciones="interactions", items="repositories", users="users"):
     """
@@ -206,102 +149,12 @@ def recomendar_perfil(username, n=6, interacciones="interactions", items="reposi
     recomendaciones = list(df_recomendacion.reset_index(drop=True).repository)
     return recomendaciones
 
-def recomendar_lightfm(id_lector, interacciones="interactions"):
-    # TODO: optimizar hiperparámetros
-    # TODO: entrenar el modelo de forma parcial
-    # TODO: user item_features y user_features
-    # TODO: usar los items ignorados (usar pesos)
-
-    con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
-    df_int = pd.read_sql_query(f"SELECT * FROM {interacciones} WHERE rating > 0", con)
-    df_items = pd.read_sql_query("SELECT * FROM libros", con)
-    con.close()
-
-    ds = lfm.data.Dataset()
-    ds.fit(users=df_int["id_lector"].unique(), items=df_items["id_libro"].unique())
-    
-    user_id_map, user_feature_map, item_id_map, item_feature_map = ds.mapping()
-    (interactions, weights) = ds.build_interactions(df_int[["id_lector", "id_libro", "rating"]].itertuples(index=False))
-
-    model = lfm.LightFM(no_components=20, k=5, n=10, learning_schedule='adagrad', loss='logistic', learning_rate=0.05, rho=0.95, epsilon=1e-06, item_alpha=0.0, user_alpha=0.0, max_sampled=10, random_state=42)
-    model.fit(interactions, sample_weight=weights, epochs=10)
-
-    libros_leidos = df_int.loc[df_int["id_lector"] == id_lector, "id_libro"].tolist()
-    todos_los_libros = df_items["id_libro"].tolist()
-    libros_no_leidos = set(todos_los_libros).difference(libros_leidos)
-    predicciones = model.predict(user_id_map[id_lector], [item_id_map[l] for l in libros_no_leidos])
-
-    recomendaciones = sorted([(p, l) for (p, l) in zip(predicciones, libros_no_leidos)], reverse=True)[:9]
-    recomendaciones = [libro[1] for libro in recomendaciones]
-    return recomendaciones
-
-def recomendar_surprise(id_lector, interacciones="interactions"):
-    con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
-    df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
-    df_items = pd.read_sql_query("SELECT * FROM libros", con)
-    con.close()
-    
-    reader = sp.reader.Reader(rating_scale=(1, 10))
-
-    data = sp.dataset.Dataset.load_from_df(df_int.loc[df_int["rating"] > 0, ['id_lector', 'id_libro', 'rating']], reader)
-    trainset = data.build_full_trainset()
-    model = sp.prediction_algorithms.matrix_factorization.SVD(n_factors=500, n_epochs=20, random_state=42)
-    model.fit(trainset)
-
-    libros_leidos_o_vistos = df_int.loc[df_int["id_lector"] == id_lector, "id_libro"].tolist()
-    todos_los_libros = df_items["id_libro"].tolist()
-    libros_no_leidos_ni_vistos = set(todos_los_libros).difference(libros_leidos_o_vistos)
-    
-    predicciones = [model.predict(id_lector, l).est for l in libros_no_leidos_ni_vistos]
-    recomendaciones = sorted([(p, l) for (p, l) in zip(predicciones, libros_no_leidos_ni_vistos)], reverse=True)[:9]
-
-    recomendaciones = [libro[1] for libro in recomendaciones]
-    return recomendaciones
-
-def recomendar_whoosh(id_lector, interacciones="interactions"):
-    con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
-    df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
-    df_items = pd.read_sql_query("SELECT * FROM libros", con)
-    con.close()
-
-    # TODO: usar cant
-    terminos = []    
-    for campo in ["editorial", "autor", "genero"]:
-        query = f"""
-            SELECT {campo} AS valor, count(*) AS cant
-            FROM {interacciones} AS i JOIN libros AS l ON i.id_libro = l.id_libro
-            WHERE id_lector = ?
-            AND rating > 0
-            GROUP BY {campo}
-            HAVING cant > 1
-            ORDER BY cant DESC
-            LIMIT 3
-        """       
-        rows = sql_select(query, (id_lector,))
-
-        for row in rows:
-            terminos.append(wh.query.Term(campo, row["valor"]))
-    
-    query = wh.query.Or(terminos)
-
-    libros_leidos_o_vistos = df_int.loc[df_int["id_lector"] == id_lector, "id_libro"].tolist()
-
-    # TODO: usar el scoring
-    # TODO: ampliar la busqueda con autores parecidos (matriz de similitudes de autores)
-    ix = wh.index.open_dir("indexdir")
-    with ix.searcher() as searcher:
-        results = searcher.search(query, terms=True, scored=True, limit=1000)
-        recomendaciones = [r["id_libro"] for r in results if r not in libros_leidos_o_vistos][:9]
-
-    return recomendaciones
 
 def recomendar_implicit(username):
     recomendador = ImplicitRecommender()
     recomendador.load_data()
     recomendador.setup_model()
     recommendations = recomendador.recommend_by_user(username, N=9)
-    #print("shape: ", recommendations.shape)
-    #print(recommendations)
     return list(recommendations.repositories)
 
 def recomendar(id_usuario, interacciones="interactions"):
@@ -322,7 +175,7 @@ def recomendar(id_usuario, interacciones="interactions"):
         id_repos = recomendar_perfil(id_usuario, interacciones=interacciones)
     else:
         print("recomendador: implicit", file=sys.stdout)
-        recomendador_activo["type"] = "Filtro Colaboratibo (engine: implicit)"
+        recomendador_activo["type"] = "Filtro Colaborativo (engine: implicit)"
         recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_PERFIL']} repositorios ({cant_valorados})"
         id_repos = recomendar_implicit(id_usuario)
         #id_repos = recomendar_surprise(id_usuario, interacciones)
