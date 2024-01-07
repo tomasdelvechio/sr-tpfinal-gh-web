@@ -1,5 +1,5 @@
 from __init__ import create_app
-from flask import Flask, request, render_template, make_response, redirect, send_from_directory, jsonify
+from flask import request, render_template, make_response, redirect, send_from_directory, jsonify
 import recomendar
 import os
 from db import get_top_users
@@ -129,6 +129,14 @@ def users():
         id_usuario=id_usuario,
         title="Buscar usuarios"
     )
+
+
+@app.route('/close')
+def close():
+    #session.clear()
+    res = make_response(redirect("/"))
+    res.set_cookie('id_usuario', '', expires=0)
+    return res
 
 
 if __name__ == "__main__":
