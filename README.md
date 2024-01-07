@@ -9,7 +9,7 @@ Este sistema implementa 3 tipos de recomendadores:
  * Filtro basado en contenido (para usuarios con una cantidad de likes moderada)
  * Filtro colaborativo via modelos de la [libreria implicit](https://benfred.github.io/implicit/)
 
-Para ver detalles de la elección de implicit y su optimización, referirse a la sección correspondiente en este mismo documento.
+Para ver detalles de la elección de implicit y su optimización, referirse a la [sección correspondiente](https://github.com/tomasdelvechio/sr-tpfinal-gh-web?tab=readme-ov-file#filtro-colaborativo) en este mismo documento.
 
 # Instalación
 
@@ -46,3 +46,34 @@ python flaskr/flask_app.py
 ```
 
 # Filtro colaborativo
+
+Se implementó la [librería implicit](https://benfred.github.io/implicit/) para el motor de recomendación colaborativo.
+
+Principalmente, se consideró que al tomar en cuenta de forma directa el concepto de interacciones basadas en `likes` (sin `dislikes`), se alineaba con el tipo de dataset y recomendación buscados en este trabajo.
+
+Al no ser una librería de las analizadas en la cursada, se realizó una exploración sobre el uso de la misma, ademas de un proceso de validación cruzada para comparar los modelos disponibles y obtener el mejor de ellos con buenos hiperparámetros.
+
+Todo esto se puede observar y reproducir con [la notebook disponible aquí](https://github.com/tomasdelvechio/sr-tpfinal-gh-web/blob/main/notebook_filtrado_colaborativo.ipynb) y el [dataset disponible acá](https://drive.google.com/file/d/1OmUjuhX0G-z35IbDKfVdkd_JOF8sC19A/view?usp=sharing).
+
+A modo de resumen de los experimentos realizados, la libreria [implementa varios modelos](https://benfred.github.io/implicit/api/models/index.html), entre los que se seleccionaron 3 para ser evaluados y optimizados:
+
+ * AlternatingLeastSquares (aka als)
+ * BayesianPersonalizedRanking (aka bpr)
+ * LogisticMatrixFactorization (aka lmf)
+
+En el proceso de validación cruzada, se optimizó la métrica NDCG (maximización) en base a un TOP 5. Para optimizar, se implementó la [librería optuna](https://optuna.org/), que ofrece en tiempo real una visualización del proceso. Se realizaron 1000 trials para cada modelo, 
+
+El resumen del proceso de optimización se puede observar en el siguente gráfico
+
+![Proceso de optimización de hiperparámetros con optuna](assets/newplot.png)
+
+Lo que se puede observar es que el modelo que se obtuvieron los mejores scores (Objective 0 es maximización del NDCG para un K=5) es para als. Muy cerca pero menor, estuvo el modelo bpr. Lejos, para el dataset elegido, quedó el modelo lmf.
+
+Se puede ver en la notebook la estrategia de sampling y pruning elegida para el proceso de optimización.
+
+Finalmente, para la versión online, se eligió el conjunto de HP que obtuvieron el mejor score:
+
+ * Score obtenido: 0.22552101789911258
+ * factors: 2
+ * regularization: 0.18739731219661934
+ * iterations: 5
