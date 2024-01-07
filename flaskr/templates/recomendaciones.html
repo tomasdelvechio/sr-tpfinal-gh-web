@@ -6,12 +6,14 @@
 
 {% include "lista-repositorios.html" %}
 
+<div class="text-center text-sm py-4 my-4 bg-gray-100 border border-gray-300">
+	<button id="boton-refrescar-recomendaciones" class="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded opacity-50 cursor-not-allowed">Recargar recomendaciones</button>
+	<p>Tipo de Recomendador activo: {{ recomendador_activo['type'] }}</p>
+	<p>Motivo: {{ recomendador_activo['why'] }}</p>
+</div>
+
 {% if thumbs_status is defined %}
 	{% include "like-button-event-js.html" %}
 {% endif %}
 
-<div class="text-center text-sm py-4 my-4 bg-gray-100 border border-gray-300">
-	<p>Tipo de Recomendador activo: {{ recomendador_activo['type'] }}</p>
-	<p>Motivo: {{ recomendador_activo['why'] }}</p>
-</div>
 {% endblock content %}

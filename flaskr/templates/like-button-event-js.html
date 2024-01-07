@@ -42,7 +42,26 @@
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
             });
+
+            // manejamos el botón de refrescar
+            let botonRefrescar = document.getElementById("boton-refrescar-recomendaciones");
+            let noLikes = (document.querySelectorAll(['.fa-thumbs-up.fa-solid']).length === 0) ? true : false ;
+            // si no hay likes, no tiene sentido recargar
+            if (noLikes) {
+                // deshabilitar
+                botonRefrescar.classList.add("opacity-50");
+                botonRefrescar.classList.add("cursor-not-allowed");
+            } else {
+                // habilitar
+                botonRefrescar.classList.remove("opacity-50");
+                botonRefrescar.classList.remove("cursor-not-allowed");
+            }
         });
+    });
+
+    let botonRefrescar = document.getElementById("boton-refrescar-recomendaciones");
+    botonRefrescar.addEventListener('click', function() {
+        location.reload()
     });
 </script>
 <style>
