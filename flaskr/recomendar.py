@@ -16,6 +16,8 @@ from whoosh import fields
 from whoosh import index
 from whoosh import qparser
 
+from recommenders.ImplicitRecommender import ImplicitRecommender
+
 THIS_FOLDER = os.path.dirname(os.path.abspath("__file__"))
 
 def sql_execute(query, params=None):
@@ -293,6 +295,15 @@ def recomendar_whoosh(id_lector, interacciones="interactions"):
 
     return recomendaciones
 
+def recomendar_implicit(username):
+    recomendador = ImplicitRecommender()
+    recomendador.load_data()
+    recomendador.setup_model()
+    recommendations = recomendador.recommend_by_user(username, N=9)
+    #print("shape: ", recommendations.shape)
+    #print(recommendations)
+    return list(recommendations.repositories)
+
 def recomendar(id_usuario, interacciones="interactions"):
     # TODO: combinar mejor los recomendadores
     # TODO: crear usuarios fans para llenar la matriz
@@ -302,22 +313,23 @@ def recomendar(id_usuario, interacciones="interactions"):
     if cant_valorados <= current_app.config["UMBRAL_TOP_N"] or current_app.config["DEBUG_TOP"]:
         print("recomendador: topN", file=sys.stdout)
         recomendador_activo["type"] = "Top mas populares"
-        recomendador_activo["why"] = f"Porque valoraste menos de {current_app.config['UMBRAL_TOP_N']} ({cant_valorados})"
+        recomendador_activo["why"] = f"Porque valoraste menos de {current_app.config['UMBRAL_TOP_N']} repositorios ({cant_valorados})"
         id_repos = recomendar_top_n(id_usuario, interacciones=interacciones)
     elif cant_valorados <= current_app.config["UMBRAL_PERFIL"] or current_app.config["DEBUG_PERFIL"]:
         print("recomendador: perfil", file=sys.stdout)
         recomendador_activo["type"] = "Filtro básado en contenido"
-        recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_TOP_N']} pero menos de {current_app.config['UMBRAL_PERFIL']} ({cant_valorados})"
+        recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_TOP_N']} pero menos de {current_app.config['UMBRAL_PERFIL']} repositorios ({cant_valorados})"
         id_repos = recomendar_perfil(id_usuario, interacciones=interacciones)
     else:
-        print("recomendador: surprise", file=sys.stdout)
+        print("recomendador: implicit", file=sys.stdout)
+        recomendador_activo["type"] = "Filtro Colaboratibo (engine: implicit)"
+        recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_PERFIL']} repositorios ({cant_valorados})"
+        id_repos = recomendar_implicit(id_usuario)
         #id_repos = recomendar_surprise(id_usuario, interacciones)
         #id_repos = recomendar_lightfm(id_usuario, interacciones)
-        id_repos = recomendar_whoosh(id_usuario, interacciones)
-
+        #id_repos = recomendar_whoosh(id_usuario, interacciones)
 
     # TODO: como completo las recomendaciones cuando vienen menos de 9?
-
     recomendaciones = datos_repositories(id_repos)
 
     return recomendaciones, recomendador_activo

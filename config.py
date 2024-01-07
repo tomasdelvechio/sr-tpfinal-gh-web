@@ -12,4 +12,5 @@ DEBUG_SQL = True
 
 ## Fuerza usar siempre el método TOPN para recomendar - util en dev
 DEBUG_TOP = False
-DEBUG_PERFIL = True
+DEBUG_PERFIL = False
+DEBUG_COLABORATIVE = True
