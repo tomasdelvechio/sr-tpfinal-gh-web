@@ -81,14 +81,16 @@ def like():
 @app.route('/profile/<username>')
 def profile(username):
     id_usuario = request.cookies.get('id_usuario')
+    liked_repos = recomendar.valorados(username)
     if (id_usuario == username):
         title = "Tu perfil"
     else:
-        title = f"Perfil de { username }"
-    liked_repos = recomendar.valorados(username)
+        title = f"Perfil de { username } - {len(liked_repos)} repositorios "
     own_repos = recomendar.get_own_repos()
     repositories = [r["repository"] for r in liked_repos]
     repos = recomendar.datos_repositories(repositories)
+    print(liked_repos)
+    usuarios, usuarios_title, usuarios_description = recomendar.recomendar_usuarios(username)
     return render_template(
         "profile.html",
         repos=repos,
@@ -96,6 +98,9 @@ def profile(username):
         username=username,
         cant_valorados=len(own_repos),
         own_repos=own_repos,
+        usuarios=usuarios,
+        usuarios_title=usuarios_title,
+        usuarios_description=usuarios_description,
         title=title)
 
 

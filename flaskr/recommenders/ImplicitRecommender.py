@@ -56,3 +56,8 @@ class ImplicitRecommender(BaseRecommender):
         user_code = self.__get_usercode(username)
         items_ids, items_scores = self.model.recommend(user_code, self.stars[user_code], N=N, filter_already_liked_items=True)
         return pd.DataFrame({"repositories": self.repocodes[items_ids], "scores": items_scores})
+    
+    def recommend_users(self, username, N=5):
+        user_code = self.__get_usercode(username)
+        similar_users_ids, similar_users_scores = self.model.similar_users(user_code, N=N)
+        return pd.DataFrame({"users": self.usercodes[similar_users_ids], "scores": similar_users_scores})

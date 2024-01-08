@@ -6,6 +6,12 @@
 	<p class="text-center text-2xl mb-4">{{ title }}</p>
 </div>
 
-{% include "lista-repositorios.html" %}
+{% if not repos %}
+	<p class="text-center mb-4">Aún no hay repositorios valorados positivamente</p>
+{% else %}
+	{% include "lista-repositorios.html" %}
+{% endif %}
+
+{% include "lista-usuarios.html" %}
 
 {% endblock content %}

@@ -1,0 +1,17 @@
+<div class="max-w-2xl mx-auto mb-6">
+    <h2 class="text-2xl font-bold mb-4">{{usuarios_title or "Users profiles"}}</h2>
+    <p class="my-3">{{ usuarios_description|safe or "" }}</p>
+    <ol class="space-y-4">
+        {% for user in usuarios %}
+            <li>
+                <div class="flex items-start space-x-4">
+                    <img src="https://avatars.githubusercontent.com/u/{{ user.gh_id }}?s=48&v=4" alt="User Avatar" class="w-6 h-6 rounded-full">
+                    <div>
+                        <a href="/profile/{{ user.id }}" class="text-blue-500 hover:underline">{{ user.id }} - {{ user.name }}</a>
+                        <p class="text-gray-500 text-sm">{{ user.bio or "NO BIO" }}</p>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ol>
+</div>

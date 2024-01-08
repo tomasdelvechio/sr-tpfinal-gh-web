@@ -153,12 +153,21 @@ def recomendar_perfil(username, n=6, interacciones="interactions", items="reposi
     return recomendaciones
 
 
-def recomendar_implicit(username):
+def built_implicit_engine():
     recomendador = ImplicitRecommender()
     recomendador.load_data()
     recomendador.setup_model()
+    return recomendador
+
+def recomendar_implicit(username):
+    recomendador = built_implicit_engine()
     recommendations = recomendador.recommend_by_user(username, N=9)
     return list(recommendations.repositories)
+
+def recomendar_users_implicit(username, n=100):
+    recomendador = built_implicit_engine()
+    recommendations = recomendador.recommend_users(username, N=n)
+    return list(recommendations.users)
 
 def recomendar(id_usuario, interacciones="interactions"):
     # TODO: combinar mejor los recomendadores
@@ -181,9 +190,6 @@ def recomendar(id_usuario, interacciones="interactions"):
         recomendador_activo["type"] = "Filtro Colaborativo (engine: implicit)"
         recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_PERFIL']} repositorios ({cant_valorados})"
         id_repos = recomendar_implicit(id_usuario)
-        #id_repos = recomendar_surprise(id_usuario, interacciones)
-        #id_repos = recomendar_lightfm(id_usuario, interacciones)
-        #id_repos = recomendar_whoosh(id_usuario, interacciones)
 
     # TODO: como completo las recomendaciones cuando vienen menos de 9?
     recomendaciones = datos_repositories(id_repos)
@@ -191,7 +197,41 @@ def recomendar(id_usuario, interacciones="interactions"):
     return recomendaciones, recomendador_activo
 
 
-def get_users(n = 100):
-    query = "SELECT DISTINCT id, gh_id, name, bio FROM users ORDER BY followers DESC, following DESC LIMIT ?"
+def recomendar_usuarios(id_usuario, interacciones="interactions"):
+    try:
+        similar_users = recomendar_users_implicit(id_usuario, n=20)
+        return get_users_by_list(similar_users, list_of_users_out=[id_usuario]), "Usuarios recomendados", f"Usuarios similares a {id_usuario} basado en sus likes"
+    except KeyError:
+        # El usuario no existe en el modelo, mandamos un top
+        return get_users(), "Usuarios recomendados", f"Usuarios populares (en base a sus seguidores)"
+
+
+def get_users(n=100, where=None):
+    where_clause = ""
+    if where is not None:
+        where_clause = f" WHERE {where} "
+    query = f"SELECT DISTINCT id, gh_id, name, bio FROM users {where_clause} ORDER BY followers DESC, following DESC LIMIT ?"
+    print("Query:", query)
     users = sql_select(query, (n,))
     return users
+
+
+def get_users_params(n=100, where=None, params=()):
+    where_clause = ""
+    if where is not None:
+        where_clause = f" WHERE {where} "
+    query = f"SELECT DISTINCT id, gh_id, name, bio FROM users {where_clause} ORDER BY followers DESC, following DESC LIMIT ?"
+    users = sql_select(query, params+(n,))
+    return users
+
+
+def get_users_by_list(list_of_users_in, list_of_users_out=None, n=100):
+    params = tuple(list_of_users_in)
+    where_users_in = ",".join(['?']*len(list_of_users_in))
+    where_users_out = ""
+    if list_of_users_out is not None:
+        where_users_out = ",".join(['?']*len(list_of_users_out))
+        where_users_out = f" AND id NOT IN ({where_users_out}) "
+        params = params + tuple(list_of_users_out)
+    where_condition = f" id IN ({where_users_in}) {where_users_out} "
+    return get_users_params(n=n, where=where_condition, params=params)
