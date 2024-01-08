@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 import os
 
-from flask import current_app
+from flask import current_app, request
 
 from recommenders.ImplicitRecommender import ImplicitRecommender
 
@@ -68,6 +68,11 @@ def valorados(user, interacciones="interactions"):
     query = f"SELECT * FROM {interacciones} WHERE user = ?"
     valorados = sql_select(query, (user,))
     return valorados
+
+def get_own_repos():
+    id_usuario = request.cookies.get('id_usuario')
+    liked_repos = valorados(id_usuario)
+    return [r["repository"] for r in liked_repos]
 
 def datos_repositories(id_repos):
     query = f"SELECT DISTINCT * FROM repositories WHERE id IN ({','.join(['?']*len(id_repos))})"

@@ -2,24 +2,10 @@
 
 {% block content %}
 
-{% if own_profile is defined and own_profile %}
-	{% set thumbs_status = 'solid' %}
-{% endif %}
-
-{% if own_profile %}
-	{% set profile_title = 'Tu Perfil' %}
-{% else %}
-	{% set profile_title = 'Perfil de ' + username %}
-{% endif %}
-
 <div>
-	<p class="text-center text-2xl mb-4">{{ profile_title }}</p>
+	<p class="text-center text-2xl mb-4">{{ title }}</p>
 </div>
 
 {% include "lista-repositorios.html" %}
-
-{% if own_profile is defined and own_profile %}
-	{% include "like-button-event-js.html" %}
-{% endif %}
 
 {% endblock content %}

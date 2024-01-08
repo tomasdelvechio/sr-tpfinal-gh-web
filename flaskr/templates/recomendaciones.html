@@ -2,8 +2,6 @@
 
 {% block content %}
 
-{% set thumbs_status = 'regular' %}
-
 {% include "lista-repositorios.html" %}
 
 <div class="text-center text-sm py-4 mb-4 bg-gray-100 border border-gray-300">
@@ -11,9 +9,5 @@
 	<p>Tipo de Recomendador activo: {{ recomendador_activo['type'] }}</p>
 	<p>Motivo: {{ recomendador_activo['why'] }}</p>
 </div>
-
-{% if thumbs_status is defined %}
-	{% include "like-button-event-js.html" %}
-{% endif %}
 
 {% endblock content %}

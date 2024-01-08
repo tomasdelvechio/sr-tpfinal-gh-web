@@ -98,12 +98,11 @@ def like():
 def profile(username):
     id_usuario = request.cookies.get('id_usuario')
     if (id_usuario == username):
-        own_profile = True
-        print("es mi profile")
+        title = "Tu perfil"
     else:
-        own_profile = False
-        print("es el profile de otro")
+        title = f"Perfil de { username }"
     liked_repos = recomendar.valorados(username)
+    own_repos = recomendar.get_own_repos()
     repositories = [r["repository"] for r in liked_repos]
     repos = recomendar.datos_repositories(repositories)
     return render_template(
@@ -112,8 +111,8 @@ def profile(username):
         id_usuario=id_usuario,
         username=username,
         cant_valorados=100,
-        own_profile=own_profile,
-        title="Profile")
+        own_repos=own_repos,
+        title=title)
 
 
 @app.route('/users')
