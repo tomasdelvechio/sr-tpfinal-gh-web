@@ -58,14 +58,6 @@
             }
         });
     });
-
-    let botonRefrescar = document.getElementById("boton-refrescar-recomendaciones");
-    botonRefrescar.addEventListener('click', function() {
-        let hayLikes = (document.querySelectorAll(['.fa-thumbs-up.fa-solid']).length === 0) ? false : true ;
-        if (hayLikes) {
-            location.reload()
-        }
-    });
 </script>
 <style>
     .like-button i {
