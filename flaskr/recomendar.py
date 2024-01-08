@@ -126,10 +126,10 @@ def recomendar_perfil(username, n=6, interacciones="interactions", items="reposi
         "repository"].to_list()
 
     # me quedo con el perfil del usuario de los repos que le gustaron
-    perfil_user = df_perfil_items[df_perfil_items["id"].isin(repos_user)].drop(columns=["id", "index", "stars", "watchers", "forks", "issues", "subscribers"]).sum(axis=0).sort_values(ascending=False)
+    perfil_user = df_perfil_items[df_perfil_items["id"].isin(repos_user)].drop(columns=["id", "stars", "watchers", "forks", "issues", "subscribers"]).sum(axis=0).sort_values(ascending=False)
     perfil_user = perfil_user / perfil_user.sum() # normalizo
 
-    df_perfil_user = df_perfil_items.drop(columns=["index", "stars", "watchers", "forks", "issues", "subscribers"]).set_index("id").copy()
+    df_perfil_user = df_perfil_items.drop(columns=["stars", "watchers", "forks", "issues", "subscribers"]).set_index("id").copy()
 
     # por ahora dimension son lenguajes, pero podria haber topics
     for dimension in df_perfil_user.columns:
@@ -163,16 +163,16 @@ def recomendar(id_usuario, interacciones="interactions"):
 
     recomendador_activo = {'type': None, 'why': None}
     cant_valorados = len(valorados(id_usuario, interacciones))
-    if cant_valorados <= current_app.config["UMBRAL_TOP_N"] or current_app.config["DEBUG_TOP"]:
+    if cant_valorados < current_app.config["UMBRAL_TOP_N"] or current_app.config["DEBUG_TOP"]:
         print("recomendador: topN", file=sys.stdout)
         recomendador_activo["type"] = "Top mas populares"
         recomendador_activo["why"] = f"Porque valoraste menos de {current_app.config['UMBRAL_TOP_N']} repositorios ({cant_valorados})"
-        id_repos = recomendar_top_n(id_usuario, interacciones=interacciones)
+        id_repos = recomendar_top_n(id_usuario, n=12, interacciones=interacciones)
     elif cant_valorados <= current_app.config["UMBRAL_PERFIL"] or current_app.config["DEBUG_PERFIL"]:
         print("recomendador: perfil", file=sys.stdout)
         recomendador_activo["type"] = "Filtro básado en contenido"
         recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_TOP_N']} pero menos de {current_app.config['UMBRAL_PERFIL']} repositorios ({cant_valorados})"
-        id_repos = recomendar_perfil(id_usuario, interacciones=interacciones)
+        id_repos = recomendar_perfil(id_usuario, n=12, interacciones=interacciones)
     else:
         print("recomendador: implicit", file=sys.stdout)
         recomendador_activo["type"] = "Filtro Colaborativo (engine: implicit)"
