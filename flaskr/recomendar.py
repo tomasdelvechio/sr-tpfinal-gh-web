@@ -135,6 +135,9 @@ def recomendar_perfil(username, n=6, interacciones="interactions", items="reposi
     for dimension in df_perfil_user.columns:
         df_perfil_user[dimension] = df_perfil_user[dimension] * perfil_user[dimension]
 
+    # filtrar repos con los que ya interactuó
+    df_perfil_user = df_perfil_user.drop(repos_user)
+
     rank = df_perfil_user.sum(axis=1).sort_values(ascending=False)[:n]
     df_recomendacion_scores = pd.DataFrame({'repository': rank.index, 'score': rank.values})
     df_recomendacion_scores
