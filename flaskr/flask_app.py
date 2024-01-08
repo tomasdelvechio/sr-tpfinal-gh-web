@@ -50,14 +50,12 @@ def recomendaciones():
     #    recomendar.insertar_interacciones(repo["id"], id_usuario, False)
 
     cant_valorados = len(recomendar.valorados(id_usuario))
-    cant_ignorados = len(recomendar.ignorados(id_usuario))
 
     return render_template(
         "recomendaciones.html",
         repos=repos,
         id_usuario=id_usuario,
         cant_valorados=cant_valorados,
-        cant_ignorados=cant_ignorados,
         recomendador_activo=recomendador_activo,
         title="Recomendaciones")
 
@@ -114,7 +112,6 @@ def profile(username):
         id_usuario=id_usuario,
         username=username,
         cant_valorados=100,
-        cant_ignorados=100,
         own_profile=own_profile,
         title="Profile")
 

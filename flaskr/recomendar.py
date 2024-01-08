@@ -69,11 +69,6 @@ def valorados(user, interacciones="interactions"):
     valorados = sql_select(query, (user,))
     return valorados
 
-def ignorados(user, interacciones="interactions"):
-    query = f"SELECT * FROM {interacciones} WHERE user = ?"
-    ignorados = sql_select(query, (user,))
-    return ignorados
-
 def datos_repositories(id_repos):
     query = f"SELECT DISTINCT * FROM repositories WHERE id IN ({','.join(['?']*len(id_repos))})"
     repositories = sql_select(query, id_repos)
