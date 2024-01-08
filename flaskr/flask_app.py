@@ -12,14 +12,8 @@ def login():
     # si me mandaron el formulario y tiene id_usuario...
     if request.method == 'POST' and 'id_usuario' in request.form:
         id_usuario = request.form['id_usuario']
-
-        # creo el usuario al insertar el id_usuario en la tabla "lectores"
         recomendar.crear_usuario(id_usuario)
-
-        # mando al usuario a la página de recomendaciones
         res = make_response(redirect("/recomendaciones"))
-
-        # pongo el id_usuario en una cookie para recordarlo
         res.set_cookie('id_usuario', id_usuario)
         return res
 
@@ -36,26 +30,16 @@ def login():
 def recomendaciones():
     id_usuario = request.cookies.get('id_usuario')
 
-    # me envían el formulario
-    #if request.method == 'POST':
-    #    for id_repo in request.form.keys():
-    #        rating = int(request.form[id_repo])
-    #        recomendar.insertar_interacciones(id_repo, id_usuario, rating)
-
     # recomendaciones
     repos, recomendador_activo = recomendar.recomendar(id_usuario)
 
-    # pongo repos vistos con rating = 0
-    #for repo in repos:
-    #    recomendar.insertar_interacciones(repo["id"], id_usuario, False)
-
-    cant_valorados = len(recomendar.valorados(id_usuario))
+    cant_valorados = recomendar.get_own_repos()
 
     return render_template(
         "recomendaciones.html",
         repos=repos,
         id_usuario=id_usuario,
-        cant_valorados=cant_valorados,
+        cant_valorados=len(cant_valorados),
         recomendador_activo=recomendador_activo,
         title="Recomendaciones")
 
@@ -110,7 +94,7 @@ def profile(username):
         repos=repos,
         id_usuario=id_usuario,
         username=username,
-        cant_valorados=100,
+        cant_valorados=len(own_repos),
         own_repos=own_repos,
         title=title)
 
@@ -119,17 +103,18 @@ def profile(username):
 def users():
     id_usuario = request.cookies.get('id_usuario')
     usuarios = recomendar.get_users()
+    cant_valorados = recomendar.get_own_repos()
     return render_template(
         "usuarios.html",
         usuarios=usuarios,
         id_usuario=id_usuario,
+        cant_valorados=len(cant_valorados),
         title="Buscar usuarios"
     )
 
 
 @app.route('/close')
 def close():
-    #session.clear()
     res = make_response(redirect("/"))
     res.set_cookie('id_usuario', '', expires=0)
     return res
