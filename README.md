@@ -54,6 +54,8 @@ pip install -r requirements.txt
 python flaskr/flask_app.py
 ```
 
+El sistema estará disponible en http://127.0.0.1:5000
+
 # Filtro colaborativo
 
 Se implementó la [librería implicit](https://benfred.github.io/implicit/) para el motor de recomendación colaborativo.
