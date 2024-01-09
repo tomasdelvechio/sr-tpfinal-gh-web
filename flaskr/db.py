@@ -22,7 +22,7 @@ def init_app(app):
 def get_top_users(n=10):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"SELECT user, count(repository) FROM interactions GROUP BY user ORDER BY 2 DESC LIMIT {n}")
+    cur.execute(f"SELECT user, count(repository) AS repositories FROM interactions GROUP BY user ORDER BY 2 DESC LIMIT {n}")
     rows = cur.fetchall()
     return rows
     #df_repos = pd.read_sql_query("SELECT user, count(repository) FROM interactions GROUP BY user ORDER BY 2 DESC", conn)

@@ -89,7 +89,6 @@ def profile(username):
     own_repos = recomendar.get_own_repos()
     repositories = [r["repository"] for r in liked_repos]
     repos = recomendar.datos_repositories(repositories)
-    print(liked_repos)
     usuarios, usuarios_title, usuarios_description = recomendar.recomendar_usuarios(username)
     return render_template(
         "profile.html",

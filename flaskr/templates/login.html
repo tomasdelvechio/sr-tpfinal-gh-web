@@ -52,11 +52,11 @@
 				Para crear un usuario nuevo, ingrese el nombre nuevo en el input. <br />
 			</p>
 			<p>
-				En cambio, si desea probar el sistema con usuarios que contengan varias recomendaciones, se deja un listado a continuación:
+				En cambio, si desea probar el sistema con usuarios que contengan muchas interacciones, se deja un listado a continuación:
 			</p>
 			<ul class="mt-10 ml-5 text-left">
 				{% for user in top_n %}
-					<li class="mb-3"><i class="fa-solid fa-user mr-2"></i><span>{{ user.user }}</span></li>
+					<li class="mb-3"><i class="fa-solid fa-user mr-2"></i><span>{{ user.user }}</span> ({{ user.repositories }} repositorios)</li>
 				{% endfor %}
 			</ul>
 		</div>

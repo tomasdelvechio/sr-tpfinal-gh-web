@@ -211,7 +211,6 @@ def get_users(n=100, where=None):
     if where is not None:
         where_clause = f" WHERE {where} "
     query = f"SELECT DISTINCT id, gh_id, name, bio FROM users {where_clause} ORDER BY followers DESC, following DESC LIMIT ?"
-    print("Query:", query)
     users = sql_select(query, (n,))
     return users
 
