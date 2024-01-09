@@ -7,9 +7,18 @@ Este sistema implementa 3 tipos de recomendadores:
 
  * Filtro de popularidad (para nuevos usuarios con ningun o pocos likes)
  * Filtro basado en contenido (para usuarios con una cantidad de likes moderada)
- * Filtro colaborativo via modelos de la [libreria implicit](https://benfred.github.io/implicit/)
+ * Filtro colaborativo vía modelo de la [libreria implicit](https://benfred.github.io/implicit/)
 
 Para ver detalles de la elección de implicit y su optimización, referirse a la [sección correspondiente](https://github.com/tomasdelvechio/sr-tpfinal-gh-web?tab=readme-ov-file#filtro-colaborativo) en este mismo documento.
+
+# Características
+
+ * Recomendación basado en popularidad, contenido y colaborativo
+ * Recomendación de repositorios básada en usuarios similares por interacción
+
+# Video de Demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Ulo47HTXBhA?si=5SjJGUSWAcBdMSFo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 # Instalación
 
