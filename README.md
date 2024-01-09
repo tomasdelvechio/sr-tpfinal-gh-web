@@ -30,7 +30,7 @@ Se asume el repositorio clonado en el dispositivo a instalar.
 cp config.py.example config.py
 ```
 
-[Se recomienda](https://flask.palletsprojects.com/en/2.3.x/config/#SECRET_KEY) generar una `SECRET_KEY`` con el siguiente comando
+[Se recomienda](https://flask.palletsprojects.com/en/2.3.x/config/#SECRET_KEY) generar una `SECRET_KEY` con el siguiente comando
 
 ```bash
 python -c 'import secrets; print(secrets.token_hex())'
