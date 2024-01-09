@@ -18,7 +18,7 @@ Para ver detalles de la elección de implicit y su optimización, referirse a la
 
 # Video de Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Ulo47HTXBhA?si=5SjJGUSWAcBdMSFo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[Ver video en YouTube](https://youtu.be/Ulo47HTXBhA)
 
 # Instalación
 
