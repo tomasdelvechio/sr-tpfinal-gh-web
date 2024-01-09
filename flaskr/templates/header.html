@@ -19,48 +19,5 @@
             <i class="fa-solid fa-person-running text-gray-600"></i>
             <a href="/close" title="cerrar sesión" class="text-sm text-gray-600 hover:text-gray-800">Cerrar Sesión</a>
         </div>
-        <!--div class="flex items-center space-x-1">
-            <i class="fa-solid fa-chart-line text-gray-600"></i>
-            <button id="openModal" class="text-sm ml-2 text-gray-600 hover:text-gray-800 focus:outline-none hover:underline">More stats...</button>
-        </div-->
     </div>
 </header>
-
-<!-- Modal -->
-<div id="header-stats-modal" class="modal hidden fixed inset-0 z-50 overflow-auto bg-gray-700 bg-opacity-75">
-    <div class="modal-content bg-white mx-auto my-10 p-6 rounded w-1/2">
-        <div class="flex items-center justify-between mb-4">
-            <!-- Title on the left -->
-            <h2 class="text-xl font-bold">User Details</h2>
-            <!-- Close icon at the top-right corner -->
-            <span id="closeModal" class="modal-close cursor-pointer text-2xl">&times;</span>
-        </div>
-        <!-- Modal content -->
-        <p class="text-gray-700 mb-2">This is a GitHub-style modal window.</p>
-        <p class="text-gray-700">Feel free to customize the content.</p>
-    </div>
-</div>
-
-<script>
-    // JavaScript to handle modal functionality
-    const openModalBtn = document.getElementById('openModal');
-    const closeModalBtn = document.getElementById('closeModal');
-    const modal = document.getElementById('header-stats-modal');
-
-    // Show modal
-    openModalBtn.addEventListener('click', () => {
-        modal.classList.remove('hidden');
-    });
-
-    // Hide modal
-    closeModalBtn.addEventListener('click', () => {
-        modal.classList.add('hidden');
-    });
-
-    // Close modal if clicked outside the content area
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.classList.add('hidden');
-        }
-    });
-</script>
