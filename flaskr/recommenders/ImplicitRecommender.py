@@ -48,7 +48,6 @@ class ImplicitRecommender(BaseRecommender):
             factors=2,
             regularization=0.18739731219661934,
             iterations=5,
-            random_state=42
         )
         self.model.fit(self.stars, show_progress=False)
     
