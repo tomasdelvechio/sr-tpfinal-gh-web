@@ -59,10 +59,6 @@ def reset_usuario(id_usuario, interacciones="interactions"):
     sql_execute(query, (id_usuario,))
     return
 
-def obtener_libro(id_libro):
-    query = "SELECT * FROM libros WHERE id_libro = ?;"
-    libro = sql_select(query, (id_libro,))[0]
-    return libro
 
 def valorados(user, interacciones="interactions"):
     query = f"SELECT * FROM {interacciones} WHERE user = ?"
@@ -105,10 +101,6 @@ def recomendar_perfil(username, n=6, interacciones="interactions", items="reposi
     """
     Recomendador basado en el contenido
     """
-    # TODO: usar otras columnas además de genlit
-    # TODO: usar datos del usuario para el perfil
-    # TODO: usar cantidad de interacciones para desempatar los scores de perfil iguales
-    # TODO: usar los items ignorados
 
     con = sqlite3.connect(os.path.join(THIS_FOLDER, "data/data.db"))
     df_int = pd.read_sql_query(f"SELECT * FROM {interacciones}", con)
@@ -170,8 +162,6 @@ def recomendar_users_implicit(username, n=100):
     return list(recommendations.users)
 
 def recomendar(id_usuario, interacciones="interactions"):
-    # TODO: combinar mejor los recomendadores
-    # TODO: crear usuarios fans para llenar la matriz
 
     recomendador_activo = {'type': None, 'why': None}
     cant_valorados = len(valorados(id_usuario, interacciones))
@@ -191,7 +181,6 @@ def recomendar(id_usuario, interacciones="interactions"):
         recomendador_activo["why"] = f"Porque valoraste mas de {current_app.config['UMBRAL_PERFIL']} repositorios ({cant_valorados})"
         id_repos = recomendar_implicit(id_usuario)
 
-    # TODO: como completo las recomendaciones cuando vienen menos de 9?
     recomendaciones = datos_repositories(id_repos)
 
     return recomendaciones, recomendador_activo
