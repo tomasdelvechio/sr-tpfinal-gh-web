@@ -48,6 +48,10 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Descarga base de datos
+
+(Opcional) En caso de no querer generar desde cero el dataset, puede descargarse uno de prueba [desde aquí](https://drive.google.com/file/d/1OmUjuhX0G-z35IbDKfVdkd_JOF8sC19A/view?usp=sharing). Ubicarlo en el path relativo `data/data.db`
+
 ## Servidor Web
 
 ```bash

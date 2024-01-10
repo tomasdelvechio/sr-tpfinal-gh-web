@@ -1,0 +1,6 @@
+Entrega Final - Sistemas de Recomendación 2023
+
+1. Sistema Web: https://github.com/tomasdelvechio/sr-tpfinal-gh-web
+2. Dataset builder: https://github.com/tomasdelvechio/sr-tpfinal-gh
+
+Para el sistema web, seguir atentamente los pasos del README, sección instalación.
